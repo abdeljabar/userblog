@@ -4,6 +4,8 @@ namespace App\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\PasswordStrength;
 
 #[MongoDB\Document]
 class User
@@ -14,15 +16,23 @@ class User
 
     #[MongoDB\Field(type: "string")]
     #[Groups(['user:read', 'user:write'])]
+    #[Assert\NotBlank]
+    #[Assert\Type('string')]
     private string $name;
 
     #[MongoDB\Field(type: "string")]
     #[Groups(['user:read', 'user:write'])]
+    #[Assert\NotBlank]
+    #[Assert\Email]
     private string $email;
 
     #[MongoDB\Field(type: "string")]
-    #[Groups(['user:write'])]
     private string $password;
+
+    #[Groups(['user:write'])]
+    #[Assert\NotBlank]
+    #[Assert\PasswordStrength(minScore: PasswordStrength::STRENGTH_STRONG)]
+    private ?string $plainPassword = null;
 
     /**
      * @return string|null
@@ -83,5 +93,22 @@ class User
     public function setPassword(string $password): void
     {
         $this->password = $password;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    /**
+     * @param string|null $plainPassword
+     * @return void
+     */
+    public function setPlainPassword(?string $plainPassword): void
+    {
+        $this->plainPassword = $plainPassword;
     }
 }

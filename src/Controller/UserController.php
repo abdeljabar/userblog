@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserController extends AbstractController
 {
@@ -44,10 +45,20 @@ class UserController extends AbstractController
      * @throws LockException
      */
     #[Route('/users', name: 'user_create', methods: ['POST'])]
-    public function createUser(Request $request, SerializerInterface $serializer): Response
+    public function createUser(
+        Request $request,
+        SerializerInterface $serializer,
+        ValidatorInterface $validator
+    ): Response
     {
         $data = $request->getContent();
         $user = $serializer->deserialize($data, User::class, 'json');
+
+        $errors = $validator->validate($user);
+
+        if (count($errors) > 0) {
+            return $this->json(['errors' => $errors], Response::HTTP_BAD_REQUEST);
+        }
 
         $this->documentManager->persist($user);
         $this->documentManager->flush();
