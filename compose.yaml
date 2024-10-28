@@ -2,6 +2,7 @@ version: "3"
 
 networks:
   userblog:
+    driver: bridge
 
 services:
 
@@ -27,7 +28,8 @@ services:
       - "9000:9000"
     environment:
       APP_ENV: dev
-      DATABASE_URL: mongodb://${MONGO_USER:-app_user}:${MONGO_PASSWORD:-app_password}@mongodb:27017/${MONGO_DB:-app_db}
+      MONGODB_URL: mongodb://${MONGO_USER:-app_user}:${MONGO_PASSWORD:-app_password}@userblog_mongodb:27017
+      MONGODB_DB: ${MONGO_DB:-app_db}
     volumes:
       - ./:/var/www/app
     networks:
@@ -38,7 +40,7 @@ services:
     image: mongo:6.0
     container_name: userblog_mongodb
     ports:
-      - 27017:27017
+      - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-app_user}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-app_password}
