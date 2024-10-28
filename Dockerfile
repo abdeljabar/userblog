@@ -1,11 +1,19 @@
-FROM php:8.3-fpm
+FROM php:8.3-fpm AS symfony-build
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends libssl-dev zlib1g-dev curl git unzip netcat libxml2-dev libpq-dev libzip-dev && \
-    pecl install apcu && \
-    docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
-    docker-php-ext-install -j$(nproc) zip opcache intl pdo_pgsql pgsql && \
-    docker-php-ext-enable apcu pdo_pgsql sodium && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libcurl4-openssl-dev \
+    pkg-config \
+    libssl-dev \
+    && pecl install mongodb \
+    && docker-php-ext-enable mongodb
 
-WORKDIR /var/www
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
+    && php -r "unlink('composer-setup.php');"
+
+WORKDIR /var/www/app
+
+COPY composer.json composer.lock ./
+RUN composer install --prefer-dist --no-dev --no-scripts --no-progress --no-interaction
