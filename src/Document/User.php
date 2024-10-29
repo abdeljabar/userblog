@@ -17,14 +17,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $id = null;
 
     #[MongoDB\Field(type: "string")]
-    #[Groups(['user:read', 'user:write'])]
-    #[Assert\NotBlank]
+    #[Groups(['user:read', 'user:write', 'user:update'])]
+    #[Assert\NotBlank(groups: ['user:write'])]
     #[Assert\Type('string')]
     private string $name;
 
     #[MongoDB\Field(type: "string")]
-    #[Groups(['user:read', 'user:write'])]
-    #[Assert\NotBlank]
+    #[Groups(['user:read', 'user:write', 'user:update'])]
+    #[Assert\NotBlank(groups: ['user:write'])]
     #[Assert\Email]
     private string $email;
 
@@ -32,7 +32,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private string $password;
 
     #[Groups(['user:write'])]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(groups: ['user:write'])]
     #[Assert\PasswordStrength(minScore: PasswordStrength::STRENGTH_STRONG)]
     private ?string $plainPassword = null;
 

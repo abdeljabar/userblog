@@ -72,4 +72,49 @@ class UserController extends AbstractController
 
         return $this->json($user, Response::HTTP_CREATED, [], ['groups' => ['user:read']]);
     }
+
+    /**
+     * @return JsonResponse
+     */
+    #[Route('/me', name: 'user_me', methods: ['GET'])]
+    public function me(): JsonResponse
+    {
+        $user = $this->getUser();
+        return $this->json($user, Response::HTTP_CREATED, [], ['groups' => ['user:read']]);
+    }
+
+    /**
+     * @param Request $request
+     * @param SerializerInterface $serializer
+     * @param ValidatorInterface $validator
+     * @return JsonResponse
+     * @throws MongoDBException
+     * @throws \Throwable
+     */
+    #[Route('/update-profile', name: 'user_profile_update', methods: ['PUT'])]
+    public function update(Request $request, SerializerInterface $serializer, ValidatorInterface $validator): JsonResponse
+    {
+        $user = $this->getUser();
+
+        $serializer->deserialize(
+            $request->getContent(),
+            User::class,
+            'json',
+            [
+                'object_to_populate' => $user,
+                'groups' => ['user:update']
+            ]
+        );
+
+        $errors = $validator->validate($user);
+
+        if (count($errors) > 0) {
+            return $this->json(['errors' => $errors], Response::HTTP_BAD_REQUEST);
+        }
+
+        $this->documentManager->persist($user);
+        $this->documentManager->flush();
+
+        return $this->json($user, Response::HTTP_OK, [], ['groups' => ['user:read']]);
+    }
 }
