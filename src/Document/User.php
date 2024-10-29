@@ -3,12 +3,14 @@
 namespace App\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\PasswordStrength;
 
 #[MongoDB\Document]
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[MongoDB\Id]
     #[Groups(['user:read', 'user:write'])]
@@ -33,6 +35,9 @@ class User
     #[Assert\NotBlank]
     #[Assert\PasswordStrength(minScore: PasswordStrength::STRENGTH_STRONG)]
     private ?string $plainPassword = null;
+
+    #[MongoDB\Field(type: 'collection')]
+    private array $roles = [];
 
     /**
      * @return string|null
@@ -110,5 +115,39 @@ class User
     public function setPlainPassword(?string $plainPassword): void
     {
         $this->plainPassword = $plainPassword;
+    }
+
+    /**
+     * The public representation of the user email address
+     *
+     * @see UserInterface
+     */
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
+
+    public function eraseCredentials(): void
+    {
+        // Clear sensitive data if any
     }
 }

@@ -11,6 +11,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -48,10 +50,12 @@ class UserController extends AbstractController
     public function createUser(
         Request $request,
         SerializerInterface $serializer,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        UserPasswordHasherInterface $passwordHasher
     ): Response
     {
         $data = $request->getContent();
+        /** @var User $user */
         $user = $serializer->deserialize($data, User::class, 'json');
 
         $errors = $validator->validate($user);
@@ -59,6 +63,9 @@ class UserController extends AbstractController
         if (count($errors) > 0) {
             return $this->json(['errors' => $errors], Response::HTTP_BAD_REQUEST);
         }
+
+        $password = $passwordHasher->hashPassword($user, $user->getPlainPassword());
+        $user->setPassword($password);
 
         $this->documentManager->persist($user);
         $this->documentManager->flush();
