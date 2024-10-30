@@ -110,7 +110,7 @@ class ArticleController extends AbstractController
         $this->documentManager->persist($article);
         $this->documentManager->flush();
 
-        return $this->json($article, Response::HTTP_CREATED, [], ['groups' => ['article:read']]);
+        return $this->json($article, Response::HTTP_OK, [], ['groups' => ['article:read']]);
     }
 
     /**
