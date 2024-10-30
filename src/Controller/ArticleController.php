@@ -67,6 +67,21 @@ class ArticleController extends AbstractController
      * @throws MongoDBException
      * @throws LockException
      */
+    #[Route('/articles/{id}', name: 'article_show', methods: ['GET'])]
+    public function show(Article $article, Request $request): Response
+    {
+        $this->documentManager->persist($article);
+        $this->documentManager->flush();
+
+        return $this->json($article, Response::HTTP_CREATED, [], ['groups' => ['article:read']]);
+    }
+
+    /**
+     * @throws MappingException
+     * @throws \Throwable
+     * @throws MongoDBException
+     * @throws LockException
+     */
     #[Route('/articles/{id}', name: 'article_update', methods: ['PUT'])]
     public function update(Article $article, Request $request, SerializerInterface $serializer, ValidatorInterface $validator): Response
     {
