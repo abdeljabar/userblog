@@ -93,6 +93,12 @@ Add the new generated token to the headers of the rest of the endpoints like thi
 -H 'Authorization: Bearer YOUR_TOKEN_HERE'
 ```
 
+## Get details of logged user
+
+```shell
+GET http://localhost:8000/me
+```
+
 ## To update logged user
 
 ```shell
